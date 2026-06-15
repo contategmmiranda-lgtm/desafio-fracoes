@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frações e Suas Representações</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #f39c12;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --background: #f5f7fa;
+            --text: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .btn-duval {
+            background-color: #6c757d;
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            margin-bottom: 20px;
+            max-width: fit-content;
+        }
+        
+        .btn-duval:hover {
+            background-color: #5a6268;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .error-count {
+            color: var(--danger);
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 10px;
+            width: 80px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            margin: 5px;
+        }
+
+        .fraction-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .fraction-line {
+            width: 80px;
+            height: 3px;
+            background-color: var(--text);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background 0.3s;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d68910;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Novo Grid para as 10 frações */
+        .grid-10 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .timer-display {
+            font-size: 1.8rem;
+            color: var(--danger);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .link-explicacao {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .number-line {
+            width: 100%;
+            height: 60px;
+            background: repeating-linear-gradient(90deg, transparent, transparent 49px, #333 49px, #333 51px), linear-gradient(0deg, transparent 28px, #333 28px, #333 32px, transparent 32px);
+            margin: 30px 0;
+            position: relative;
+        }
+
+        /* Estilos do Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            text-align: left;
+        }
+        .modal-content h2 { color: var(--primary); margin-top: 0; }
+        .modal-content p { line-height: 1.6; text-align: justify; }
+        .btn-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none; border: none;
+            color: #999; font-size: 1.5rem;
+            cursor: pointer; width: auto; padding: 0; margin: 0;
+        }
+        .btn-close:hover { color: var(--danger); background: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .grid-10 { grid-template-columns: repeat(3, 1fr); }
+            .options-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 400px) {
+            .grid-10 { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Frações e Suas Representações</h1>
+    
+    <button class="btn-duval" onclick="abrirModal('modal-duval')">👨‍🏫 Para Pais e Professores</button>
+    
+    <div class="status-bar">
+        <span>Fase: <span id="current-phase">1</span>/6</span>
+        <span class="error-count">Erros: <span id="error-count">0</span>/5</span>
+    </div>
+
+    <!-- Etapa 1: Definir a Fração -->
+    <div id="step-1" class="step active">
+        <h3>1. Escolha sua fração</h3>
+        <p>Digite uma fração ou gere uma aleatória.</p>
+        <div class="fraction-input">
+            <input type="number" id="num-1" placeholder="Num">
+            <div class="fraction-line"></div>
+            <input type="number" id="den-1" placeholder="Den">
+        </div>
+        <button onclick="iniciarComFracaoUsuario()">Usar minha fração</button>
+        <button class="btn-secondary" onclick="gerarFracaoAleatoria()">Obter fração aleatória</button>
+    </div>
+
+    <!-- Etapa 2: Fração Equivalente (Múltipla Escolha) -->
+    <div id="step-2" class="step">
+        <h3>2. Qual fração abaixo é equivalente a <span class="frac-atual"></span>?</h3>
+        <div class="options-grid" id="options-step2"></div>
+        <div class="link-explicacao" onclick="alert('Fundamentação Teórica: Frações equivalentes representam a mesma quantidade. Multiplicando ou dividindo o numerador e o denominador pelo mesmo número, obtemos uma fração equivalente.')">💡 Clique aqui para explicação</div>
+    </div>
+
+    <!-- Etapa 3: Digitar Fração Equivalente -->
+    <div id="step-3" class="step">
+        <h3>3. Digite outra fração equivalente a <span class="frac-atual"></span></h3>
+        <p style="font-size: 0.9rem; color: #666;">(Atenção: não pode ser a fração original nem a escolhida na etapa anterior. Você tem 3 tentativas.)</p>
+        <p>Tentativas: <span id="tentativas-step3">0</span>/3</p>
+        <div class="fraction-input">
+            <input type="number" id="num-3" placeholder="Num">
+            <div class="fraction-line"></div>
+            <input type="number" id="den-3" placeholder="Den">
+        </div>
+        <button onclick="verificarEtapa3()">Verificar</button>
+    </div>
+
+    <!-- Etapa 4: Reta Numérica -->
+    <div id="step-4" class="step">
+        <h3>4. Onde a fração <span class="frac-atual"></span> está na reta numérica?</h3>
+        <p>Considere o intervalo de 0 a 1.</p>
+        <div class="number-line"></div>
+        <div class="options-grid" id="options-step4"></div>
+    </div>
+
+    <!-- Etapa 5: Fração de uma quantidade -->
+    <div id="step-5" class="step">
+        <h3>5. Calcule <span class="frac-atual"></span> de 1.000</h3>
+        <div class="options-grid" id="options-step5"></div>
+        <div class="link-explicacao" onclick="alert('Explicação: Para calcular a fração de um número, divida o número pelo denominador e multiplique o resultado pelo numerador.')">💡 Clique aqui para explicação</div>
+    </div>
+
+    <!-- Etapa 6: Encontrar a menor fração (Novo Desafio) -->
+    <div id="step-6" class="step">
+        <h3>6. Desafio Final: A Menor Fração</h3>
+        <p>Encontre e clique na fração que representa o <strong>menor valor</strong>!</p>
+        <div class="timer-display" id="timer">15s</div>
+        <div class="grid-10" id="options-step6">
+            <!-- Botões gerados via JS -->
+        </div>
+        <div class="link-explicacao" onclick="abrirModal('modal-explicacao-menor')">💡 Explicando (Como descobrir a menor?)</div>
+    </div>
+
+    <!-- Tela Final -->
+    <div id="step-final" class="step">
+        <h3 style="color: var(--success); font-size: 2rem;">🏆 Parabéns!</h3>
+        <p style="font-size: 1.2rem;">Você concluiu todas as etapas e demonstrou um excelente domínio sobre frações!</p>
+        <p>Você provou ser um verdadeiro mestre das representações matemáticas. Continue assim!</p>
+        <button onclick="reiniciarJogo()">Jogar Novamente</button>
+    </div>
+
+</div>
+
+<!-- Modais -->
+<div class="modal-overlay" id="modal-duval">
+    <div class="modal-content">
+        <button class="btn-close" onclick="fecharModal('modal-duval')">✖</button>
+        <h2>A Base do Aprendizado</h2>
+        <p>Este jogo foi desenvolvido com base na <strong>Teoria dos Registros de Representação Semiótica</strong> do psicólogo cognitivo e matemático francês <em>Raymond Duval</em>.</p>
+        <p>Segundo Duval, um conceito matemático não pode ser aprendido de verdade se a criança não conseguir transitar entre diferentes formas de representá-lo. Em nosso jogo, o aluno é desafiado a interagir com a fração de várias maneiras:</p>
+        <ul>
+            <li><strong>Registro Numérico:</strong> Escrever a fração (ex: 1/2).</li>
+            <li><strong>Registro Algébrico:</strong> Encontrar frações equivalentes.</li>
+            <li><strong>Registro Gráfico:</strong> Posicionamento na reta numérica.</li>
+            <li><strong>Linguagem Natural:</strong> Resolução de problemas do dia a dia.</li>
+        </ul>
+        <p>Mudar de uma representação para a outra fortalece as conexões cerebrais, sendo a chave para a verdadeira compreensão matemática!</p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-explicacao-menor">
+    <div class="modal-content">
+        <button class="btn-close" onclick="fecharModal('modal-explicacao-menor')">✖</button>
+        <h2>Como descobrir a menor fração?</h2>
+        <p>Encontrar a menor fração pode parecer difícil se elas forem diferentes, mas você pode usar estes truques:</p>
+        <ol>
+            <li><strong>Transformar em divisão (Decimal):</strong> Toda fração é uma divisão. Se você dividir o número de cima (numerador) pelo de baixo (denominador), você acha o valor real. Por exemplo: 1/2 é 1 dividido por 2, que dá 0,5. Quem tiver o menor resultado é a menor fração!</li>
+            <li><strong>Denominadores Iguais:</strong> Se os números de baixo fossem todos iguais, bastaria olhar o número de cima. O menor numerador seria a menor fração (ex: 1/5 é menor que 3/5).</li>
+            <li><strong>Bolo ou Pizza:</strong> Imagine que o número de baixo é em quantos pedaços a pizza foi cortada, e o de cima é quantos você comeu. Se a pizza foi cortada em 10 pedaços e você comeu 1 (1/10), você comeu bem menos do que se tivesse comido 1 de uma pizza cortada ao meio (1/2).</li>
+        </ol>
+    </div>
+</div>
+
+<script>
+    // Estado do Jogo
+    let state = {
+        num: 0,
+        den: 0,
+        errosTotais: 0,
+        fracoesUsadas: [],
+        tentativasEtapa3: 0
+    };
+    let timerInterval;
+    let tempoRestante = 15;
+
+    // Funções de Modais
+    function abrirModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+    function fecharModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // Funções de Navegação e Controle
+    function mostrarEtapa(etapa) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById(`step-${etapa}`).classList.add('active');
+        if(etapa !== 'final' && etapa <= 6) document.getElementById('current-phase').innerText = etapa;
+        atualizarTextosFração();
+    }
+
+    function registrarErro() {
+        state.errosTotais++;
+        document.getElementById('error-count').innerText = state.errosTotais;
+        if (state.errosTotais >= 5) {
+            alert("Você atingiu o limite de 5 erros. O jogo será reiniciado!");
+            reiniciarJogo();
+            return true;
+        }
+        return false;
+    }
+
+    function reiniciarJogo() {
+        clearInterval(timerInterval);
+        state = { num: 0, den: 0, errosTotais: 0, fracoesUsadas: [], tentativasEtapa3: 0 };
+        document.getElementById('error-count').innerText = "0";
+        document.getElementById('tentativas-step3').innerText = "0";
+        document.getElementById('num-1').value = "";
+        document.getElementById('den-1').value = "";
+        document.getElementById('num-3').value = "";
+        document.getElementById('den-3').value = "";
+        mostrarEtapa(1);
+    }
+
+    function atualizarTextosFração() {
+        if(state.num > 0 && state.den > 0) {
+            const text = `${state.num}/${state.den}`;
+            document.querySelectorAll('.frac-atual').forEach(el => el.innerText = text);
+        }
+    }
+
+    // Utilidades Matemáticas
+    function saoEquivalentes(n1, d1, n2, d2) {
+        return (n1 * d2) === (n2 * d1);
+    }
+
+    // --- ETAPA 1 ---
+    function iniciarComFracaoUsuario() {
+        const n = parseInt(document.getElementById('num-1').value);
+        const d = parseInt(document.getElementById('den-1').value);
+        if (isNaN(n) || isNaN(d) || d === 0) {
+            alert("Por favor, digite uma fração válida (denominador não pode ser zero).");
+            return;
+        }
+        configurarJogo(n, d);
+    }
+
+    function gerarFracaoAleatoria() {
+        const d = Math.floor(Math.random() * 8) + 2; 
+        const n = Math.floor(Math.random() * (d - 1)) + 1; 
+        document.getElementById('num-1').value = n;
+        document.getElementById('den-1').value = d;
+        configurarJogo(n, d);
+    }
+
+    function configurarJogo(n, d) {
+        state.num = n;
+        state.den = d;
+        state.fracoesUsadas.push(`${n}/${d}`);
+        prepararEtapa2();
+        mostrarEtapa(2);
+    }
+
+    // --- ETAPA 2 ---
+    function prepararEtapa2() {
+        const container = document.getElementById('options-step2');
+        container.innerHTML = '';
+        
+        let fator = Math.floor(Math.random() * 3) + 2;
+        let correta = { n: state.num * fator, d: state.den * fator, eq: true };
+        
+        let opcoes = [correta];
+        while(opcoes.length < 4) {
+            let numErrado = state.num + Math.floor(Math.random() * 5) + 1;
+            let denErrado = state.den + Math.floor(Math.random() * 5) + 1;
+            if(!saoEquivalentes(state.num, state.den, numErrado, denErrado)) {
+                opcoes.push({ n: numErrado, d: denErrado, eq: false });
+            }
+        }
+        opcoes.sort(() => Math.random() - 0.5);
+        
+        opcoes.forEach(op => {
+            const btn = document.createElement('button');
+            btn.innerText = `${op.n}/${op.d}`;
+            btn.onclick = () => {
+                if(op.eq) {
+                    state.fracoesUsadas.push(`${op.n}/${op.d}`);
+                    mostrarEtapa(3);
+                } else {
+                    if(!registrarErro()) alert("Fração incorreta. Tente novamente!");
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // --- ETAPA 3 ---
+    function verificarEtapa3() {
+        const n = parseInt(document.getElementById('num-3').value);
+        const d = parseInt(document.getElementById('den-3').value);
+        
+        if (isNaN(n) || isNaN(d) || d === 0) {
+            alert("Fração inválida.");
+            return;
+        }
+
+        const fracaoDigitada = `${n}/${d}`;
+
+        if (state.fracoesUsadas.includes(fracaoDigitada)) {
+            if(!registrarErro()) alert("Digite uma fração diferente das anteriores!");
+            state.tentativasEtapa3++;
+        } else if (!saoEquivalentes(state.num, state.den, n, d)) {
+            if(!registrarErro()) alert(`Tente de novo! (${state.tentativasEtapa3 + 1}/3)`);
+            state.tentativasEtapa3++;
+        } else {
+            state.fracoesUsadas.push(fracaoDigitada);
+            prepararEtapa4();
+            mostrarEtapa(4);
+            return;
+        }
+
+        document.getElementById('tentativas-step3').innerText = state.tentativasEtapa3;
+        if (state.tentativasEtapa3 >= 3) {
+            alert("Você esgotou as 3 tentativas. Voltando para a etapa 1.");
+            reiniciarJogo();
+        }
+    }
+
+    // --- ETAPA 4 ---
+    function prepararEtapa4() {
+        const container = document.getElementById('options-step4');
+        container.innerHTML = '';
+        
+        const valorDecimal = state.num / state.den;
+        let opcoes = [{ texto: `Ponto em ${valorDecimal.toFixed(2)}`, correta: true }];
+        
+        while(opcoes.length < 4) {
+            let erro = Math.random();
+            if(Math.abs(erro - valorDecimal) > 0.1) {
+                opcoes.push({ texto: `Ponto em ${erro.toFixed(2)}`, correta: false });
+            }
+        }
+        opcoes.sort(() => Math.random() - 0.5);
+        
+        opcoes.forEach((op, index) => {
+            const btn = document.createElement('button');
+            btn.innerText = `Opção ${['A','B','C','D'][index]}: ${op.texto}`;
+            btn.onclick = () => {
+                if(op.correta) {
+                    prepararEtapa5();
+                    mostrarEtapa(5);
+                } else {
+                    if(!registrarErro()) alert("Posição incorreta. Tente novamente!");
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // --- ETAPA 5 ---
+    function prepararEtapa5() {
+        const container = document.getElementById('options-step5');
+        container.innerHTML = '';
+        
+        const respostaCerta = (1000 / state.den) * state.num;
+        let opcoes = [{ val: respostaCerta, correta: true }];
+        
+        while(opcoes.length < 4) {
+            let erro = respostaCerta + (Math.floor(Math.random() * 200) - 100);
+            if(erro !== respostaCerta && erro > 0 && !opcoes.some(o => o.val === erro)) {
+                opcoes.push({ val: Math.round(erro), correta: false });
+            }
+        }
+        opcoes.sort(() => Math.random() - 0.5);
+        
+        opcoes.forEach((op, index) => {
+            const btn = document.createElement('button');
+            btn.innerText = `(${['A','B','C','D'][index]}) ${op.val}`;
+            btn.onclick = () => {
+                if(op.correta) {
+                    prepararEtapa6();
+                    mostrarEtapa(6);
+                } else {
+                    if(!registrarErro()) alert("Cálculo incorreto. Tente novamente!");
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // --- ETAPA 6: NOVO DESAFIO (Menor Fração e Temporizador) ---
+    function prepararEtapa6() {
+        const container = document.getElementById('options-step6');
+        container.innerHTML = '';
+        clearInterval(timerInterval); // Garante que não haja cronômetros sobrepostos
+        
+        let fracoesGeradas = [];
+        let valoresDecimaisUnicos = new Set();
+        
+        // Gerar 10 frações aleatórias garantindo que não tenham o mesmo valor decimal
+        while(fracoesGeradas.length < 10) {
+            let d = Math.floor(Math.random() * 11) + 2; // de 2 a 12
+            let n = Math.floor(Math.random() * (d + 5)) + 1; // de 1 até um pouco maior que o denominador
+            let val = n / d;
+            
+            if(!valoresDecimaisUnicos.has(val)) {
+                valoresDecimaisUnicos.add(val);
+                fracoesGeradas.push({ n: n, d: d, val: val });
+            }
+        }
+        
+        // Encontra o menor valor absoluto dentre as geradas
+        const menorValorEncontrado = Math.min(...fracoesGeradas.map(f => f.val));
+        
+        // Criação dos botões
+        fracoesGeradas.forEach(frac => {
+            const btn = document.createElement('button');
+            btn.innerText = `${frac.n}/${frac.d}`;
+            btn.style.width = '100%';
+            btn.style.margin = '0';
+            btn.onclick = () => {
+                if (frac.val === menorValorEncontrado) {
+                    clearInterval(timerInterval);
+                    mostrarEtapa('final');
+                } else {
+                    if(!registrarErro()) alert("Ops! Essa não é a menor. Tente outra!");
+                }
+            };
+            container.appendChild(btn);
+        });
+        
+        iniciarCronometro();
+    }
+
+    function iniciarCronometro() {
+        tempoRestante = 15;
+        const displayTimer = document.getElementById('timer');
+        displayTimer.innerText = `${tempoRestante}s`;
+        displayTimer.style.color = 'var(--danger)';
+        
+        timerInterval = setInterval(() => {
+            tempoRestante--;
+            displayTimer.innerText = `${tempoRestante}s`;
+            
+            if(tempoRestante <= 0) {
+                clearInterval(timerInterval);
+                if(!registrarErro()) {
+                    alert("O tempo acabou! Uma nova rodada de frações foi gerada, tente novamente e seja rápido!");
+                    prepararEtapa6(); // Regera a tela se não deu game over
+                }
+            }
+        }, 1000);
+    }
+
+</script>
+</body>
+</html>
